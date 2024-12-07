@@ -2,16 +2,28 @@ from googleapiclient.discovery import build
 import re
 from datetime import datetime, timedelta
 from moviepy.editor import VideoFileClip,AudioFileClip
-from pytube import YouTube
+
+import yt_dlp
+import os
 import cv2
 import pysrt
 import textwrap
 import assemblyai as aai
 api_key = 'AIzaSyDoVkEyPUdD6OUW-Dr_2pfbJhgU7hUtG-s'
-video_url = 'https://www.youtube.com/watch?v=_32QyCVw6Ig'
+video_url = 'https://www.youtube.com/watch?v=jAqsAVIz3Qs'
 db = {}
 youtube = build('youtube', 'v3', developerKey=api_key)
+import shutil
 
+
+def create_zip_file(Folder):
+    folder_path = Folder
+
+    # Path where the ZIP file will be created (without .zip extension)
+    zip_file_path = Folder
+
+    # Create a ZIP file
+    shutil.make_archive(zip_file_path, 'zip', folder_path)
 class VideoClip():
     def __init__(self, video_url,no_of_comments):
         self.video_url = video_url
@@ -149,20 +161,23 @@ class VideoClip():
 
             return video_id
 
-        def download_youtube_video(video_url, download_path):
+        def download_youtube_video(video_url, save_path="."):
+            ydl_opts = {
+                'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save as title.extension
+                'format': 'best',  # Get the best video and audio quality
+            }
             try:
-                # Create a YouTube object
-                yt = YouTube(video_url)
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    # Extract video information
+                    info_dict = ydl.extract_info(video_url, download=True)
+                    video_title = info_dict.get('title', 'video')  # Get the video title
+                    video_ext = info_dict.get('ext', 'mp4')  # Get the video extension
 
-                # Get the highest resolution stream
-                stream = yt.streams.get_highest_resolution()
+                    # Construct the full path to the downloaded file
+                    video_path = os.path.join(save_path, fr"{video_title}.{video_ext}")
 
-                # Download the video
-                video_file_path = stream.download(output_path=download_path)
-
-                print(f"Downloaded: {yt.title}")
-
-                return video_file_path
+                    print("Download completed successfully!")
+                    return video_path
             except Exception as e:
                 print(f"An error occurred: {e}")
                 return None
@@ -245,7 +260,7 @@ class VideoClip():
                   # Use BILINEAR method
 
                 # Define the output file path
-                output_file = f'clip_{idx + 1}.mp4'
+                output_file = f'Final_OGdim\clip_{idx + 1}.mp4'
 
                 # Write the resized subclip to a file
                 clip.write_videofile(output_file, codec='libx264')
@@ -318,17 +333,21 @@ class VideoClip():
         video_id = extract_video_id_from_url(self.video_url)
         comments = get_comments(youtube, video_id)
         clip_no = 0
-        for idx, comment in enumerate(comments):
-            timestamps = extract_timestamps(comment)
-            if timestamps:
-                print(f"Comment {idx + 1}: {comment}")
-                clip_no = clip_no + 1
-                for timestamp in timestamps:
-                    print(f"  Extracted timestamp: {timestamp}")
-                    print(f"  End Time stamp: {add_seconds_to_timestamp(timestamp,15)}")
-                    db[f"Clip {clip_no}"] = {"start": timestamp, "end": add_seconds_to_timestamp(timestamp,15)}
-            else:
-                continue
+        try:
+            for idx, comment in enumerate(comments):
+                timestamps = extract_timestamps(comment)
+                if timestamps:
+                    print(f"Comment {idx + 1}: {comment}")
+                    clip_no = clip_no + 1
+                    for timestamp in timestamps:
+                        print(f"  Extracted timestamp: {timestamp}")
+                        print(f"  End Time stamp: {add_seconds_to_timestamp(timestamp,15)}")
+                        db[f"Clip {clip_no}"] = {"start": timestamp, "end": add_seconds_to_timestamp(timestamp,15)}
+                else:
+                    continue
+        except Exception as e:
+            print(f"Error: {e}")
+            pass
 
         print(db)
 
@@ -336,9 +355,9 @@ class VideoClip():
         print(video_path)
         extract_clips(video_path, db)
         for i in range(len(db)):
-            resize_and_add_audio(f'clip_{i+1}.mp4',f'clip{i+1}_final.mp4',360,450)
-            add_subtitles(f'clip{i+1}_final')
+            resize_and_add_audio(f'Final_OGdim\clip_{i+1}.mp4',f'Final_Resize\clip{i+1}_final.mp4',360,450)
+            #add_subtitles(f'clip{i+1}_final')
 
 
-videdit = VideoClip('https://www.youtube.com/watch?v=tbgU4cjunY4&t=3062s',100)
-videdit.get_video_clip()
+#videdit = VideoClip('https://www.youtube.com/watch?v=AYlXBelyj-I',100)
+#videdit.get_video_clip()
