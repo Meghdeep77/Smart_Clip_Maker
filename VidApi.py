@@ -2,7 +2,8 @@ from googleapiclient.discovery import build
 import re
 from datetime import datetime, timedelta
 from moviepy.editor import VideoFileClip,AudioFileClip
-
+from pytubefix import YouTube
+from pytubefix.cli import on_progress
 import yt_dlp
 import os
 import cv2
@@ -165,6 +166,7 @@ class VideoClip():
             ydl_opts = {
                 'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save as title.extension
                 'format': 'best',  # Get the best video and audio quality
+                'cookies': 'cookies.txt'
             }
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -359,5 +361,5 @@ class VideoClip():
             #add_subtitles(f'clip{i+1}_final')
 
 
-#videdit = VideoClip('https://www.youtube.com/watch?v=AYlXBelyj-I',100)
-#videdit.get_video_clip()
+videdit = VideoClip('https://www.youtube.com/watch?v=RKtl_L4ASQ4',100)
+videdit.get_video_clip()
