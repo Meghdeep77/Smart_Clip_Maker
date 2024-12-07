@@ -2,8 +2,6 @@ from googleapiclient.discovery import build
 import re
 from datetime import datetime, timedelta
 from moviepy.editor import VideoFileClip,AudioFileClip
-from pytubefix import YouTube
-from pytubefix.cli import on_progress
 import yt_dlp
 import os
 import cv2
