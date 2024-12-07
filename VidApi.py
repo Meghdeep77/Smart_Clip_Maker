@@ -164,7 +164,7 @@ class VideoClip():
             ydl_opts = {
                 'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save as title.extension
                 'format': 'best',  # Get the best video and audio quality
-                'cookies': 'cookies.txt'
+                'cookiefile': 'cookies.txt'
             }
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
