@@ -359,5 +359,5 @@ class VideoClip():
             #add_subtitles(f'clip{i+1}_final')
 
 
-videdit = VideoClip('https://www.youtube.com/watch?v=RKtl_L4ASQ4',100)
-videdit.get_video_clip()
+#videdit = VideoClip('https://www.youtube.com/watch?v=RKtl_L4ASQ4',100)
+#videdit.get_video_clip()
