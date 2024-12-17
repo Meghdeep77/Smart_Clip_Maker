@@ -124,7 +124,6 @@ python-multipart==0.0.19
 pytube==15.0.0
 pytubefix==6.7.0
 pytz==2024.1
-pywinpty==2.0.13
 PyYAML==6.0.1
 pyzmq==26.0.3
 qtconsole==5.5.2
