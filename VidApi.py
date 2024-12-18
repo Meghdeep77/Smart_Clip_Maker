@@ -162,25 +162,27 @@ class VideoClip():
             return video_id
 
         def download_youtube_video(video_url, save_path="."):
-    ydl_opts = {
-        'outtmpl': os.path.join(save_path, '%(title)s.%(ext)s'),
-        'format': 'best',
-        'cookiefile': 'cookies.txt',  # Provide valid cookies if needed
-        'headers': {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'},
-    }
+            ydl_opts = {
+                'outtmpl': os.path.join(save_path, '%(title)s.%(ext)s'),
+                'format': 'best',
+                'cookiefile': 'cookies.txt',  # Provide valid cookies if needed
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'},
+            }
 
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(video_url, download=True)
-            video_title = info_dict.get('title', 'video')
-            video_ext = info_dict.get('ext', 'mp4')
-            video_path = os.path.join(save_path, f"{video_title}.{video_ext}")
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info_dict = ydl.extract_info(video_url, download=True)
+                    video_title = info_dict.get('title', 'video')
+                    video_ext = info_dict.get('ext', 'mp4')
+                    video_path = os.path.join(save_path, f"{video_title}.{video_ext}")
 
-            print(f"Download completed successfully! Saved to: {video_path}")
-            return video_path
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return None
+                    print(f"Download completed successfully! Saved to: {video_path}")
+                    return video_path
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                return None
+
         def get_comments(youtube, video_id):
             # Call the commentThreads.list method to retrieve comments
             request = youtube.commentThreads().list(
