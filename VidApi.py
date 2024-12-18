@@ -8,6 +8,7 @@ import cv2
 import pysrt
 import textwrap
 import assemblyai as aai
+import subprocess
 api_key = 'AIzaSyDoVkEyPUdD6OUW-Dr_2pfbJhgU7hUtG-s'
 video_url = 'https://www.youtube.com/watch?v=jAqsAVIz3Qs'
 db = {}
@@ -160,26 +161,46 @@ class VideoClip():
 
             return video_id
 
-        def download_youtube_video(video_url, save_path="."):
-            ydl_opts = {
-                'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save as title.extension
-                'format': 'best',  # Get the best video and audio quality
-                'cookiefile': 'cookies.txt'
-            }
+        def download_youtube_video(video_url, cookies_file, save_path=None):
+            # Use the current directory if no save path is provided
+            if save_path is None:
+                save_path = os.getcwd()
+
+            # Output template for saving the video
+            output_template = os.path.join(save_path, '%(title)s.%(ext)s')
+
+            cmd = [
+                "yt-dlp",
+                "--cookies", cookies_file,
+                "--force-generic-extractor",  # Optional: Force generic extraction
+                "--extractor-retries", "3",  # Retry on extraction failure
+                "--geo-bypass",  # Bypass region restrictions
+                "-o", output_template,  # Save format
+                video_url
+            ]
+
             try:
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    # Extract video information
-                    info_dict = ydl.extract_info(video_url, download=True)
-                    video_title = info_dict.get('title', 'video')  # Get the video title
-                    video_ext = info_dict.get('ext', 'mp4')  # Get the video extension
+                result = subprocess.run(cmd, capture_output=True, text=True)
 
-                    # Construct the full path to the downloaded file
-                    video_path = os.path.join(save_path, fr"{video_title}.{video_ext}")
+                # Check for errors
+                if result.returncode == 0:
+                    # Parse the video path from the output
+                    stdout = result.stdout
+                    for line in stdout.splitlines():
+                        if "Destination:" in line:  # yt-dlp outputs the saved path with "Destination:"
+                            video_path = line.split("Destination:")[1].strip()
+                            print(f"Download completed successfully! Saved to: {video_path}")
+                            return video_path
 
-                    print("Download completed successfully!")
-                    return video_path
+                    # If "Destination:" line is not found, fallback to the template
+                    print("Download completed successfully, but the exact path is unknown. Using the template.")
+                    return output_template
+
+                else:
+                    print(f"Error occurred: {result.stderr}")
+                    return None
             except Exception as e:
-                print(f"An error occurred: {e}")
+                print(f"An exception occurred: {e}")
                 return None
         def get_comments(youtube, video_id):
             # Call the commentThreads.list method to retrieve comments
@@ -351,7 +372,7 @@ class VideoClip():
 
         print(db)
 
-        video_path = download_youtube_video(self.video_url,fr"{os.getcwd()}")
+        video_path = download_youtube_video(self.video_url,"cookies.txt")
         print(video_path)
         extract_clips(video_path, db)
         for i in range(len(db)):
