@@ -161,47 +161,26 @@ class VideoClip():
 
             return video_id
 
-        def download_youtube_video(video_url, cookies_file, save_path=None):
-            # Use the current directory if no save path is provided
-            if save_path is None:
-                save_path = os.getcwd()
+        def download_youtube_video(video_url, save_path="."):
+    ydl_opts = {
+        'outtmpl': os.path.join(save_path, '%(title)s.%(ext)s'),
+        'format': 'best',
+        'cookiefile': 'cookies.txt',  # Provide valid cookies if needed
+        'headers': {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'},
+    }
 
-            # Output template for saving the video
-            output_template = os.path.join(save_path, '%(title)s.%(ext)s')
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(video_url, download=True)
+            video_title = info_dict.get('title', 'video')
+            video_ext = info_dict.get('ext', 'mp4')
+            video_path = os.path.join(save_path, f"{video_title}.{video_ext}")
 
-            cmd = [
-                "yt-dlp",
-                "--cookies", cookies_file,
-                "--force-generic-extractor",  # Optional: Force generic extraction
-                "--extractor-retries", "3",  # Retry on extraction failure
-                "--geo-bypass",  # Bypass region restrictions
-                "-o", output_template,  # Save format
-                video_url
-            ]
-
-            try:
-                result = subprocess.run(cmd, capture_output=True, text=True)
-
-                # Check for errors
-                if result.returncode == 0:
-                    # Parse the video path from the output
-                    stdout = result.stdout
-                    for line in stdout.splitlines():
-                        if "Destination:" in line:  # yt-dlp outputs the saved path with "Destination:"
-                            video_path = line.split("Destination:")[1].strip()
-                            print(f"Download completed successfully! Saved to: {video_path}")
-                            return video_path
-
-                    # If "Destination:" line is not found, fallback to the template
-                    print("Download completed successfully, but the exact path is unknown. Using the template.")
-                    return output_template
-
-                else:
-                    print(f"Error occurred: {result.stderr}")
-                    return None
-            except Exception as e:
-                print(f"An exception occurred: {e}")
-                return None
+            print(f"Download completed successfully! Saved to: {video_path}")
+            return video_path
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return None
         def get_comments(youtube, video_id):
             # Call the commentThreads.list method to retrieve comments
             request = youtube.commentThreads().list(
