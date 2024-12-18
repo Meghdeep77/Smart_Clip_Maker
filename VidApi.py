@@ -164,7 +164,7 @@ class VideoClip():
             ydl_opts = {
                 'outtmpl': f'{save_path}/%(title)s.%(ext)s',  # Save as title.extension
                 'format': 'best',  # Get the best video and audio quality
-                'cookiefile': 'cookies.txt'
+                'cookiefile': 'cookies (1).txt'
             }
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -351,7 +351,7 @@ class VideoClip():
 
         print(db)
 
-        video_path = download_youtube_video(self.video_url,r"C:\Users\Meghdeep\PycharmProjects\smartvidclipper")
+        video_path = download_youtube_video(self.video_url,fr"{os.getcwd()}")
         print(video_path)
         extract_clips(video_path, db)
         for i in range(len(db)):
